@@ -26,30 +26,30 @@ str2: .space 300 #endereco da string 2 de ate 300 chars
 
 .macro strcat
     la $t0, str1        # ponteiro p/ str1
-find_end:
+encontrar_fim:
     lb $t1, 0($t0)      # lê o byte atual
-    beq $t1, 10, remove_newline  # se '\n', remove
-    beq $t1, $zero, copy_loop  # se '\0', achou fim
+    beq $t1, 10, remover_newline  # se '\n', remove
+    beq $t1, $zero, loop_copia  # se '\0', achou fim
     addi $t0, $t0, 1    # avança ponteiro
-    j find_end
+    j encontrar_fim
 
-remove_newline:
+remover_newline:
     sb $zero, 0($t0)    # substitui '\n' por '\0'
-    j copy_loop
+    j loop_copia
 
-copy_loop:
+loop_copia:
     la $t2, str2        # ponteiro p/ str2
-copy_char:
+copiar_char:
     lb $t3, 0($t2)      # lê byte de str2
-    beq $t3, 10, skip_newline  # se for '\n', pula
+    beq $t3, 10, pular_newline  # se for '\n', pula
     sb $t3, 0($t0)      # copia para str1
-    beq $t3, $zero, done_copy  # para após copiar '\0'
+    beq $t3, $zero, copia_feita  # para após copiar '\0'
     addi $t0, $t0, 1    # avança ponteiro str1
-skip_newline:
+pular_newline:
     addi $t2, $t2, 1    # avança ponteiro str2
-    j copy_char
+    j copiar_char
 
-done_copy:
+copia_feita:
 .end_macro
 
 .macro strcmp 
