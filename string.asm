@@ -34,7 +34,7 @@ encontrar_fim:
     j encontrar_fim
 
 remover_newline:
-    sb $zero, 0($t0)    # substitui '\n' por '\0'
+    sb $zero, 0($t0)    # substitui '\n' por '\0' (Poque se não não concatena)
     j loop_copia
 
 loop_copia:
@@ -87,6 +87,25 @@ copia_feita:
 	encerrar_cmp:
 	#apenas retorna da macro, nao encerra o programa
 .end_macro 
+
+
+# Memcpy
+memcpy:
+    move $v0, $a0       # Salva o destination original para retorno
+    move $t0, $a0       # Ponteiro para destination
+    move $t1, $a1       # Ponteiro para source
+    
+memcpy_loop:
+    beq $a2, $zero, memcpy_end  # Se num == 0, termina
+    lb $t2, 0($t1)      # Carrega byte da source
+    sb $t2, 0($t0)      # Armazena byte no destination
+    addi $t0, $t0, 1    # Avança destination
+    addi $t1, $t1, 1    # Avança source
+    addi $a2, $a2, -1   # Decrementa contador
+    j memcpy_loop
+    
+memcpy_end:
+    jr $ra
 
 .text
 	#toda essa identacao nao afeta o codigo, serve apenas para manter a sanidade
