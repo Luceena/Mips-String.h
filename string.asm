@@ -88,6 +88,65 @@ copia_feita:
 	#apenas retorna da macro, nao encerra o programa
 .end_macro 
 
+# Função strcpy - implementada conforme requisitos
+# $a0 = destination, $a1 = source
+# Retorna $v0 = destination
+strcpy:
+    move $v0, $a0       # Salva destination original para retorno
+    move $t0, $a0       # Ponteiro para destination
+    move $t1, $a1       # Ponteiro para source
+    
+strcpy_loop:
+    lb $t2, 0($t1)      # Carrega byte da source
+    sb $t2, 0($t0)      # Armazena byte no destination
+    beq $t2, $zero, strcpy_end  # Se encontrou NULL, termina
+    addi $t0, $t0, 1    # Avança destination
+    addi $t1, $t1, 1    # Avança source
+    j strcpy_loop
+    
+strcpy_end:
+    jr $ra              # Retorna para o endereço de chamada
+
+# Função strncmp - compara até num caracteres
+strncmp:
+    move $t0, $a0       # $t0 = ponteiro para str1
+    move $t1, $a1       # $t1 = ponteiro para str2  
+    move $t2, $a3       # $t2 = contador de caracteres (num)
+    li $v0, 0           # Inicializa retorno como 0 (iguais)
+
+strncmp_loop:
+    ble $t2, $zero, strncmp_end  # Se num <= 0, termina a comparação
+    lb $t3, 0($t0)      # Carrega byte atual de str1
+    lb $t4, 0($t1)      # Carrega byte atual de str2
+    
+    beq $t3, $zero, check_str2_end  # Se str1 terminou, verifica str2
+    beq $t4, $zero, str1_greater    # Se str2 terminou mas str1 não, str1 é maior
+    
+    bne $t3, $t4, chars_different   # Se caracteres são diferentes, trata
+    
+    # Caracteres são iguais, avança para o próximo
+    addi $t0, $t0, 1    # Avança ponteiro de str1
+    addi $t1, $t1, 1    # Avança ponteiro de str2
+    addi $t2, $t2, -1   # Decrementa contador
+    j strncmp_loop      # Continua loop
+
+check_str2_end:
+    beq $t4, $zero, strncmp_end  # Se ambas terminaram, são iguais
+    j str2_greater                # Se só str1 terminou, str2 é maior
+
+chars_different:
+    slt $t5, $t3, $t4   # $t5 = 1 se str1 < str2, 0 caso contrário
+    beq $t5, $zero, str1_greater  # Se str1 >= str2, verifica qual é maior
+    
+str2_greater:
+    li $v0, -1          # str1 < str2, retorna -1
+    j strncmp_end
+    
+str1_greater:
+    li $v0, 1           # str1 > str2, retorna 1
+
+strncmp_end:
+    jr $ra              # Retorna para o endereço de chamada
 
 # Memcpy
 memcpy:
@@ -105,23 +164,4 @@ memcpy_loop:
     j memcpy_loop
     
 memcpy_end:
-    jr $ra
-
-.text
-	#toda essa identacao nao afeta o codigo, serve apenas para manter a sanidade
-	inserir_string1
-	inserir_string2
-	
-	# Faz a comparacao primeiro
-	strcmp
-	
-	# Agora concatena
-	strcat
-	
-	# Imprimir str1 concatenada
-    li $v0, 4
-    la $a0, str1
-    syscall
-    
-    li $v0, 10
-    syscall
+    jr $ra              # Retorna para o endereço de chamada
